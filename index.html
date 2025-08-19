@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Cuenta Regresiva para la Boda</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Quicksand', sans-serif;
+      background: linear-gradient(to bottom right, #ffe6e6, #fff5f0);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .card {
+      background-color: #ffffff;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      max-width: 400px;
+    }
+
+    h1 {
+      font-size: 2.2em;
+      color: #d6336c;
+      margin-bottom: 10px;
+    }
+
+    .label {
+      font-size: 1em;
+      color: #888;
+      margin-bottom: 20px;
+    }
+
+    #countdown {
+      font-size: 1.8em;
+      color: #333;
+      margin-top: 10px;
+    }
+
+    .emoji {
+      font-size: 2em;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>💍 ¡Cuenta regresiva para la boda! 💍</h1>
+    <div class="label">Del 19 de agosto al 25 de octubre de 2025</div>
+    <div id="countdown">Cargando...</div>
+    <div class="emoji">🎀👰🤵🎀</div>
+  </div>
+
+  <script>
+    const startDate = new Date("2025-08-19T00:00:00");
+    const endDate = new Date("2025-10-25T00:00:00");
+    const countdown = document.getElementById("countdown");
+
+    function updateCountdown() {
+      const now = new Date();
+
+      if (now < startDate) {
+        countdown.innerHTML = "La cuenta regresiva comenzará el 19 de agosto.";
+        return;
+      }
+
+      const diff = endDate - now;
+
+      if (diff <= 0) {
+        countdown.innerHTML = "¡Hoy es el gran día! 🎉";
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+
+      countdown.innerHTML = `${days} días, ${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+  </script>
+</body>
+</html>
