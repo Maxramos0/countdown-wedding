@@ -1,91 +1,1772 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Cuenta Regresiva para la Boda</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NÓMINA MAPE</title>
+  <!-- Bootstrap + Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Quicksand', sans-serif;
-      background: linear-gradient(to bottom right, #ffe6e6, #fff5f0);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+    :root{
+      --brand:#0d6efd;
+      --bg:#f4f6f9;
+      --card-bg:#ffffff;
+      --text:#212529;
+      --muted:#6c757d;
+      --border:#e9ecef;
     }
+    [data-theme="dark"]{
+      --bg:#0f1115;
+      --card-bg:#171a21;
+      --text:#e9ecef;
+      --muted:#a6b0c2;
+      --border:#2a2f3a;
+    }
+    body{background:var(--bg); color:var(--text);}
 
-    .card {
-      background-color: #ffffff;
-      padding: 40px;
-      border-radius: 20px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      text-align: center;
-      max-width: 400px;
-    }
+    /* Topbar con logo */
+    .topbar{background:#0b0b0b;color:#fff;}
+    .brand-logo{height:44px;width:auto;border-radius:6px;margin-right:10px}
+    .brand-title{font-weight:700;letter-spacing:.4px}
 
-    h1 {
-      font-size: 2.2em;
-      color: #d6336c;
-      margin-bottom: 10px;
-    }
+    /* Navbar principal */
+    .navbar{background:var(--brand)}
+    .navbar .nav-link{color:#fff!important;border:1px solid rgba(255,255,255,.2);margin-left:.35rem;border-radius:.5rem;transition:transform .2s ease, background .2s ease, box-shadow .2s ease}
+    .navbar .nav-link:hover{background:rgba(255,255,255,.12);transform:scale(1.06);box-shadow:0 6px 16px rgba(0,0,0,.15)}
 
-    .label {
-      font-size: 1em;
-      color: #888;
-      margin-bottom: 20px;
-    }
+    /* Animación de entrada del contenedor principal */
+    .app-container{opacity:0;transform:translateY(24px);animation:fadeSlide .6s ease forwards}
+    @keyframes fadeSlide{to{opacity:1;transform:translateY(0)}}
 
-    #countdown {
-      font-size: 1.8em;
-      color: #333;
-      margin-top: 10px;
-    }
+    /* Tarjetas KPI */
+    .kpi-card{border:none;border-radius:1rem;color:#fff;box-shadow:0 8px 20px rgba(0,0,0,.08);transition:transform .2s ease, box-shadow .2s ease;cursor:pointer}
+    .kpi-card:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 12px 26px rgba(0,0,0,.12)}
+    .kpi-icon{font-size:1.8rem;opacity:.9}
 
-    .emoji {
-      font-size: 2em;
-      margin-top: 20px;
-    }
+    /* Últimas actividades */
+    .gradient-header{background:linear-gradient(90deg,#6a11cb 0%,#2575fc 100%);color:#fff;border-top-left-radius:.75rem;border-top-right-radius:.75rem}
+
+    /* Botones y tarjetas hover */
+    .btn-anim{transition:transform .15s ease, box-shadow .15s ease}
+    .btn-anim:hover{transform:scale(1.05);box-shadow:0 8px 18px rgba(0,0,0,.12)}
+
+    /* Tabla */
+    .table thead th{background:#f1f4fb}
+    [data-theme="dark"] .table thead th{background:#1e2330;color:#cfd6e6}
+
+    /* Modal */
+    .modal-content{border:none;border-radius:1rem;box-shadow:0 10px 30px rgba(0,0,0,.2);background:var(--card-bg);color:var(--text)}
+    .card{background:var(--card-bg)}
+
+    /* Sugerencias (autocompletado) */
+    .suggest-box{position:relative}
+    .suggest-list{position:absolute;z-index:1000;left:0;right:0;top:100%;background:var(--card-bg);border:1px solid var(--border);border-top:none;max-height:220px;overflow:auto;border-bottom-left-radius:.5rem;border-bottom-right-radius:.5rem}
+    .suggest-item{padding:.5rem .75rem;cursor:pointer}
+    .suggest-item:hover{background:#f8f9fa}
+    [data-theme="dark"] .suggest-item:hover{background:#202635}
+
+    .hidden{display:none!important}
+    .nav-tabs .nav-link{color:var(--text)}
+    .nav-tabs .nav-link.active{font-weight:600}
+
+    /* Forzar mayúsculas en inputs de texto/contraseñas visualmente */
+    input[type="text"], input[type="password"] { text-transform: uppercase; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>💍 ¡Cuenta regresiva para la boda! 💍</h1>
-    <div class="label">Del 19 de agosto al 25 de octubre de 2025</div>
-    <div id="countdown">Cargando...</div>
-    <div class="emoji">🎀👰🤵🎀</div>
+  <!-- Barra superior con logo y título -->
+  <div class="topbar py-2">
+    <div class="container d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center">
+        <img class="brand-logo" src="3731e69f-2765-47c7-98ae-6d34524298ec.png" alt="Logo MAPE" />
+        <div class="brand-title">RECURSOS HUMANOS</div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button id="btnDark" class="btn btn-sm btn-outline-light" title="Modo oscuro" onclick="toggleTheme()">
+          <i class="bi bi-moon"></i>
+        </button>
+        <button id="btnLogout" class="btn btn-sm btn-outline-light" onclick="logout()">Cerrar sesión</button>
+      </div>
+    </div>
   </div>
 
+  <!-- Navbar principal -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand text-white" href="#" onclick="navigate('dashboard');return false;"><i class="bi bi-calculator"></i> Sistema de Nómina Mape</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbars" aria-controls="navbars" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbars">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#" onclick="navigate('dashboard');return false;"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" onclick="navigate('empleados');return false;"><i class="bi bi-people"></i> Empleados</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" onclick="navigate('nomina');return false;"><i class="bi bi-cash-coin"></i> Generar Nómina</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" onclick="navigate('reportes');return false;"><i class="bi bi-journal-text"></i> Reportes</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- LOGIN (modal bloqueante) -->
+  <div class="modal fade" id="loginModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title"><i class="bi bi-door-open"></i> Iniciar sesión</h5></div>
+        <div class="modal-body">
+          <div class="d-flex justify-content-between mb-3">
+            <div class="text-muted small">Demo: <strong>ADMIN / MAPE</strong> o <strong>CAPTURISTA / MAPE</strong></div>
+            <!-- Restaurar respaldo ANTES de entrar -->
+            <label class="btn btn-outline-secondary btn-sm mb-0">
+              <i class="bi bi-cloud-upload"></i> Restaurar respaldo
+              <input id="loginRestore" type="file" accept="application/json" class="d-none">
+            </label>
+          </div>
+          <form id="formLogin" class="row g-3">
+            <div class="col-12">
+              <label class="form-label">USUARIO</label>
+              <input name="usuario" class="form-control upper" placeholder="ADMIN" required>
+            </div>
+            <div class="col-12">
+              <label class="form-label">CONTRASEÑA</label>
+              <input name="password" type="password" class="form-control upper" placeholder="MAPE" required>
+            </div>
+            <div class="col-12 text-end">
+              <button class="btn btn-primary btn-anim" type="submit">Entrar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENEDOR PRINCIPAL (SPA) -->
+  <!-- DASHBOARD -->
+  <div class="container my-4 app-container" id="view-dashboard">
+    <h3 class="mb-1"><i class="bi bi-speedometer2"></i> DASHBOARD</h3>
+    <p class="text-muted">Resumen general</p>
+
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-md-3">
+        <div class="card kpi-card bg-primary p-3 text-center" onclick="abrirEmpleadosModal()">
+          <div class="kpi-icon"><i class="bi bi-people"></i></div>
+          <div class="fw-semibold">Total Empleados</div>
+          <div class="display-6" id="kpiEmpleados">0</div>
+        </div>
+      </div>
+      <div class="col-12 col-md-3">
+        <div class="card kpi-card bg-success p-3 text-center" onclick="abrirNominasModal()">
+          <div class="kpi-icon"><i class="bi bi-cash-coin"></i></div>
+          <div class="fw-semibold">Nóminas Procesadas</div>
+          <div class="display-6" id="kpiNominas">0</div>
+        </div>
+      </div>
+      <div class="col-12 col-md-3">
+        <div class="card kpi-card bg-warning p-3 text-center" onclick="abrirAguinaldoModal()">
+          <div class="kpi-icon"><i class="bi bi-gift"></i></div>
+          <div class="fw-semibold">Aguinaldo</div>
+          <div class="fs-3" id="kpiAguinaldo">$0.00</div>
+        </div>
+      </div>
+      <div class="col-12 col-md-3">
+        <div class="card kpi-card bg-info p-3 text-center text-dark" onclick="abrirPrestamosModal()">
+          <div class="kpi-icon"><i class="bi bi-credit-card"></i></div>
+          <div class="fw-semibold">Préstamos Activos</div>
+          <div class="display-6" id="kpiPrestamos">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="gradient-header p-3 fw-semibold"><i class="bi bi-arrow-repeat"></i> Últimas Actividades</div>
+      <div class="card-body" id="activityLog">
+        <p class="text-muted mb-0">No hay actividades recientes. ¡Comienza agregando empleados!</p>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+      <button class="btn btn-outline-secondary btn-anim" onclick="exportarRespaldo()"><i class="bi bi-cloud-download"></i> Respaldo rápido</button>
+      <button class="btn btn-primary btn-anim" onclick="openEmpleadoModal()"><i class="bi bi-person-plus"></i> Agregar Empleado</button>
+    </div>
+  </div>
+
+  <!-- Empleados -->
+  <div class="container my-4 app-container hidden" id="view-empleados">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h3 class="mb-0"><i class="bi bi-people"></i> Empleados</h3>
+      <div class="d-flex flex-wrap gap-2">
+        <input id="buscarEmp" class="form-control form-control-sm upper" style="width:220px" placeholder="BUSCAR POR NOMBRE O #">
+        <select id="filtroEstatus" class="form-select form-select-sm" style="width:auto" onchange="renderEmpleados()">
+          <option value="todos">Todos</option>
+          <option value="activo">Activos</option>
+          <option value="baja">Dados de baja</option>
+        </select>
+        <button class="btn btn-outline-secondary btn-anim" onclick="imprimirEmpleados()"><i class="bi bi-printer"></i> Imprimir lista</button>
+        <button class="btn btn-outline-secondary btn-anim" onclick="openHorasHistoricasModal()"><i class="bi bi-clock-history"></i> Cargar horas históricas</button>
+        <button class="btn btn-outline-secondary btn-anim" onclick="openEstatusModal()"><i class="bi bi-toggle2-on"></i> Cambiar estatus</button>
+        <button class="btn btn-primary btn-anim" onclick="openEmpleadoModal()"><i class="bi bi-person-plus"></i> Agregar Empleado</button>
+      </div>
+    </div>
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle" id="tablaEmpleados">
+            <thead>
+              <tr>
+                <th>Estatus</th>
+                <th># Empleado</th>
+                <th>Nombre</th>
+                <th>Línea/Depto</th>
+                <th>Puesto</th>
+                <th>Sueldo/Hora</th>
+                <th>INF / Transporte</th>
+                <th>Ingreso Mape</th>
+                <th>Ingreso IMSS</th>
+                <th>Contrato</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="small text-muted">* Activos: <span class="badge text-bg-success">ACTIVO</span> · Bajas: <span class="badge text-bg-danger">BAJA</span> · Haga clic en los montos para editar.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generar Nómina -->
+  <div class="container my-4 app-container hidden" id="view-nomina">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h3 class="mb-0"><i class="bi bi-cash-coin"></i> Generar Nómina</h3>
+      <button class="btn btn-success btn-anim" onclick="openPagoModal()"><i class="bi bi-calculator"></i> Calcular Pago</button>
+    </div>
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <p class="text-muted mb-2">
+          Semana actual: <strong id="labelSemana">—</strong>
+          <span id="labelSemanaRango" class="ms-2"></span>
+        </p>
+        <div class="d-flex gap-2 mb-3">
+          <button id="btnCerrarSemana" class="btn btn-outline-danger btn-sm btn-anim" onclick="cerrarSemana()">Cerrar semana</button>
+          <button id="btnReabrirSemana" class="btn btn-outline-secondary btn-sm btn-anim hidden" onclick="reabrirSemana()">Reabrir semana</button>
+        </div>
+        <p class="text-muted mb-2">Usa el botón <strong>Calcular Pago</strong> para registrar un pago nuevo.
+          El autocompletado sugerirá empleados por nombre conforme escribas.</p>
+        <div id="nominaListado" class="small text-muted">Aún no hay nóminas registradas.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reportes -->
+  <div class="container my-4 app-container hidden" id="view-reportes">
+    <h3 class="mb-3"><i class="bi bi-journal-text"></i> Reportes</h3>
+    <div class="alert alert-info">Genera y consulta tus reportes.</div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-3" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-nomina" data-bs-toggle="tab" data-bs-target="#pane-nomina" type="button" role="tab">Nómina</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-aguinaldo" data-bs-toggle="tab" data-bs-target="#pane-aguinaldo" type="button" role="tab">Aguinaldo por semana</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-general" data-bs-toggle="tab" data-bs-target="#pane-general" type="button" role="tab">General</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-imss" data-bs-toggle="tab" data-bs-target="#pane-imss" type="button" role="tab">Ingreso IMSS</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-auditoria" data-bs-toggle="tab" data-bs-target="#pane-auditoria" type="button" role="tab">Auditoría</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-respaldo" data-bs-toggle="tab" data-bs-target="#pane-respaldo" type="button" role="tab">Respaldo</button>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      <!-- Nómina -->
+      <div class="tab-pane fade show active" id="pane-nomina" role="tabpanel" aria-labelledby="tab-nomina">
+        <div class="d-flex gap-2 mb-2">
+          <button class="btn btn-outline-primary btn-anim" onclick="exportarCSV()"><i class="bi bi-download"></i> Exportar CSV</button>
+          <button class="btn btn-outline-secondary btn-anim" onclick="exportarPDF('reporteNomina','Reporte de Nómina')"><i class="bi bi-filetype-pdf"></i> Exportar PDF</button>
+        </div>
+        <div id="reporteNomina" class="small"></div>
+      </div>
+
+      <!-- Aguinaldo por semana -->
+      <div class="tab-pane fade" id="pane-aguinaldo" role="tabpanel" aria-labelledby="tab-aguinaldo">
+        <div class="d-flex gap-2 mb-2">
+          <button class="btn btn-outline-primary btn-anim" onclick="exportarAguinaldoSemanasCSV()"><i class="bi bi-download"></i> Exportar CSV</button>
+          <button class="btn btn-outline-secondary btn-anim" onclick="exportarPDF('reporteAguinaldoSemanas','Aguinaldo por semana')"><i class="bi bi-filetype-pdf"></i> Exportar PDF</button>
+        </div>
+        <div id="reporteAguinaldoSemanas" class="small"></div>
+      </div>
+
+      <!-- General -->
+      <div class="tab-pane fade" id="pane-general" role="tabpanel" aria-labelledby="tab-general">
+        <div class="d-flex gap-2 mb-2">
+          <button class="btn btn-outline-primary btn-anim" onclick="exportarGeneralCSV()"><i class="bi bi-download"></i> Exportar CSV</button>
+          <button class="btn btn-outline-secondary btn-anim" onclick="exportarPDF('reporteGeneral','Reporte General')"><i class="bi bi-filetype-pdf"></i> Exportar PDF</button>
+        </div>
+        <div id="reporteGeneral" class="small"></div>
+      </div>
+
+      <!-- Ingreso IMSS -->
+      <div class="tab-pane fade" id="pane-imss" role="tabpanel" aria-labelledby="tab-imss">
+        <div class="d-flex gap-2 mb-2">
+          <button class="btn btn-outline-primary btn-anim" onclick="exportarIMSSCSV()"><i class="bi bi-download"></i> Exportar CSV</button>
+          <button class="btn btn-outline-secondary btn-anim" onclick="exportarPDF('reporteIMSS','Ingreso IMSS')"><i class="bi bi-filetype-pdf"></i> Exportar PDF</button>
+        </div>
+        <div id="reporteIMSS" class="small"></div>
+      </div>
+
+      <!-- Auditoría -->
+      <div class="tab-pane fade" id="pane-auditoria" role="tabpanel" aria-labelledby="tab-auditoria">
+        <div class="d-flex gap-2 mb-2">
+          <button class="btn btn-outline-secondary btn-anim" onclick="exportarPDF('reporteAuditoria','Auditoría de cambios')"><i class="bi bi-filetype-pdf"></i> Exportar PDF</button>
+        </div>
+        <div id="reporteAuditoria" class="small"></div>
+      </div>
+
+      <!-- Respaldo -->
+      <div class="tab-pane fade" id="pane-respaldo" role="tabpanel" aria-labelledby="tab-respaldo">
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <button class="btn btn-outline-primary btn-anim" onclick="exportarRespaldo()"><i class="bi bi-cloud-download"></i> Exportar respaldo (.json)</button>
+          <label class="btn btn-outline-secondary btn-anim mb-0">
+            <i class="bi bi-cloud-upload"></i> Importar respaldo
+            <input id="inputRestore" type="file" accept="application/json" class="d-none" onchange="importarRespaldo(event)">
+          </label>
+        </div>
+        <div class="alert alert-warning">
+          El respaldo incluye: Empleados, Nóminas, Actividades, Horas históricas, Planes, Semanas y Preferencias locales.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Agregar/Editar Empleado -->
+  <div class="modal fade" id="empleadoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-person-plus"></i> <span id="empleadoModalTitulo">Agregar Empleado</span></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formEmpleado" class="row g-3">
+            <input type="hidden" id="editMode" value="0">
+            <input type="hidden" id="oldNumero" value="">
+            <div class="col-12">
+              <label class="form-label">Nombre</label>
+              <input required name="nombre" class="form-control upper" />
+            </div>
+            <div class="col-6">
+              <label class="form-label">Número de empleado</label>
+              <input required name="numero" class="form-control upper" />
+            </div>
+            <div class="col-6">
+              <label class="form-label">Sueldo por hora</label>
+              <input required name="sueldo" type="number" step="0.01" min="0" class="form-control" />
+            </div>
+            <div class="col-6">
+              <label class="form-label">Sueldo por hora (Aguinaldo)</label>
+              <input name="sueldoAguinaldo" type="number" step="0.01" min="0" class="form-control" placeholder="Si vacío, usa sueldo normal" />
+            </div>
+
+            <div class="col-6">
+              <label class="form-label">¿Cuenta con Infonavit?</label>
+              <select name="infonavitActivo" class="form-select">
+                <option value="no" selected>NO</option>
+                <option value="si">SÍ</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Monto Infonavit (si aplica)</label>
+              <input name="infonavitMonto" type="number" step="0.01" min="0" class="form-control" placeholder="0.00" />
+            </div>
+
+            <div class="col-6">
+              <label class="form-label">¿Usa transporte?</label>
+              <select name="transporteActivo" class="form-select">
+                <option value="no" selected>NO</option>
+                <option value="si">SÍ</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Monto Transporte</label>
+              <input name="transporteMonto" type="number" step="0.01" min="0" class="form-control" placeholder="300.00" />
+            </div>
+
+            <div class="col-6">
+              <label class="form-label">Línea / Departamento</label>
+              <input name="linea" class="form-control upper" />
+            </div>
+            <div class="col-6">
+              <label class="form-label">Puesto</label>
+              <input name="puesto" class="form-control upper" />
+            </div>
+
+            <div class="col-6">
+              <label class="form-label">Ingreso Mape</label>
+              <input name="ingresoMape" type="date" class="form-control" />
+            </div>
+            <div class="col-6">
+              <label class="form-label">Ingreso IMSS</label>
+              <input name="ingresoIMSS" type="date" class="form-control" />
+            </div>
+
+            <div class="col-12 text-end">
+              <button class="btn btn-primary btn-anim" type="submit">Guardar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Calcular Pago -->
+  <div class="modal fade" id="pagoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-cash-coin"></i> Calcular Pago</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formPago" class="row g-3">
+            <div class="col-12 suggest-box">
+              <label class="form-label">Empleado (buscar por nombre)</label>
+              <input id="buscarEmpleado" autocomplete="off" class="form-control upper" placeholder="ESCRIBE PARA BUSCAR..." />
+              <div id="sugerencias" class="suggest-list hidden"></div>
+              <input type="hidden" id="empleadoSeleccionado" name="numero" />
+            </div>
+            <div class="col-4">
+              <label class="form-label">Horas trabajadas</label>
+              <input required name="horas" type="number" step="0.01" min="0" class="form-control" />
+            </div>
+            <div class="col-4">
+              <label class="form-label">Extras</label>
+              <input name="extras" type="number" step="0.01" min="0" class="form-control" value="0" />
+            </div>
+            <div class="col-4">
+              <label class="form-label">Bonos</label>
+              <input name="bonos" type="number" step="0.01" min="0" class="form-control" value="0" />
+            </div>
+
+            <div class="col-12"><hr class="my-2"></div>
+            <div class="col-12">
+              <label class="form-label">Deducciones</label>
+              <div class="row g-2 align-items-end">
+                <div class="col-md-4">
+                  <select id="tipoDedu" class="form-select">
+                    <option value="">-- Selecciona --</option>
+                    <option>Infonavit</option>
+                    <option>Prestamos</option>
+                    <option>Guantes</option>
+                    <option>Botas</option>
+                    <option>Overall</option>
+                    <option>Otros</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <input id="montoDedu" type="number" step="0.01" min="0" class="form-control" placeholder="Monto" />
+                </div>
+                <div class="col-md-4">
+                  <input id="detalleDedu" class="form-control upper" placeholder="DETALLE (SI ES OTROS)" />
+                </div>
+                <div class="col-12 text-end">
+                  <button type="button" class="btn btn-outline-primary btn-sm btn-anim" onclick="agregarDeduccion()"><i class="bi bi-plus-circle"></i> Agregar deducción</button>
+                </div>
+              </div>
+              <div class="mt-2">
+                <ul id="listaDeducciones" class="list-group small"></ul>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="alert alert-secondary d-flex justify-content-between align-items-center">
+                <div>
+                  <div><strong>Fórmula:</strong> horas × sueldo/hora + extras + bonos − deducciones</div>
+                  <div class="small text-muted">(Se usa el sueldo/hora guardado del empleado)</div>
+                </div>
+                <div class="fs-5"><strong>Total estimado: </strong><span id="totalPreview">$0.00</span></div>
+              </div>
+            </div>
+
+            <div class="col-12 text-end">
+              <button class="btn btn-success btn-anim" type="submit">Calcular y Guardar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modales KPI -->
+  <div class="modal fade" id="empleadosModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Lista de Empleados</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body" id="listaEmpleados"></div>
+    </div></div>
+  </div>
+
+  <div class="modal fade" id="nominasModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Nóminas Procesadas</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body" id="listaNominas"></div>
+    </div></div>
+  </div>
+
+  <div class="modal fade" id="prestamosModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Préstamos Activos</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body" id="listaPrestamos"></div>
+    </div></div>
+  </div>
+
+  <div class="modal fade" id="aguinaldoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Aguinaldo</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body" id="listaAguinaldo"></div>
+    </div></div>
+  </div>
+
+  <!-- MODALES: Horas Históricas & Estatus -->
+  <div class="modal fade" id="horasModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"><i class="bi bi-clock-history"></i> Cargar horas históricas</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <form id="formHoras" class="row g-3">
+          <div class="col-12">
+            <label class="form-label">Empleado</label>
+            <select id="histEmpleado" class="form-select" required></select>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Horas</label>
+            <input id="histHoras" type="number" min="0" step="0.01" class="form-control" required>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Fecha</label>
+            <input id="histFecha" type="date" class="form-control" required>
+          </div>
+          <div class="col-12 text-end">
+            <button class="btn btn-primary btn-anim" type="submit">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="modal fade" id="estatusModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"><i class="bi bi-toggle2-on"></i> Cambiar estatus</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <form id="formEstatus" class="row g-3">
+          <div class="col-12">
+            <label class="form-label">Empleado</label>
+            <select id="statusEmpleado" class="form-select" required></select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Estatus</label>
+            <select id="statusValor" class="form-select" required>
+              <option value="activo">Activo</option>
+              <option value="baja">Baja</option>
+            </select>
+          </div>
+          <div class="col-12 text-end">
+            <button class="btn btn-primary btn-anim" type="submit">Aplicar</button>
+          </div>
+        </form>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
   <script>
-    const startDate = new Date("2025-08-19T00:00:00");
-    const endDate = new Date("2025-10-25T00:00:00");
-    const countdown = document.getElementById("countdown");
+  document.addEventListener('DOMContentLoaded', () => {
+    // ===================== STORAGE KEYS =====================
+    const LS_KEYS = {
+      EMP:'mape_empleados',
+      PAY:'mape_nominas',
+      ACT:'mape_actividades',
+      HIST:'mape_horas_hist',
+      PLANS:'mape_planes',
+      WEEKS:'mape_weeks',
+      AUTH:'mape_auth',
+      THEME:'mape_theme'
+    };
+    const getLS = (k) => JSON.parse(localStorage.getItem(k) || '[]');
+    const setLS = (k,v) => localStorage.setItem(k, JSON.stringify(v));
 
-    function updateCountdown() {
+    // ====== Helper: forzar mayúsculas en todos los inputs con clase .upper ======
+    function toUpperAll(scope=document){
+      scope.querySelectorAll('input.upper, textarea.upper').forEach(el=>{
+        el.addEventListener('input', ()=>{ el.value = (el.value||'').toUpperCase(); });
+        el.value = (el.value||'').toUpperCase();
+      });
+    }
+    toUpperAll();
+
+    // ===================== TEMA =====================
+    function applySavedTheme(){
+      const t = localStorage.getItem(LS_KEYS.THEME) || 'light';
+      document.documentElement.setAttribute('data-theme', t==='dark' ? 'dark' : 'light');
+    }
+    window.toggleTheme = function(){
+      const cur = document.documentElement.getAttribute('data-theme')==='dark' ? 'dark':'light';
+      const next = cur==='dark' ? 'light':'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem(LS_KEYS.THEME, next);
+    };
+    applySavedTheme();
+
+    // ===================== LOGIN (roles) =====================
+    const loginModal = new bootstrap.Modal('#loginModal');
+    function checkAuth(){
+      const a = JSON.parse(localStorage.getItem(LS_KEYS.AUTH) || 'null');
+      if(!a || !a.logged){
+        setTimeout(()=>loginModal.show(), 100);
+      }
+    }
+    window.logout = function(){
+      localStorage.removeItem(LS_KEYS.AUTH);
+      loginModal.show();
+    }
+    // Restaurar respaldo desde login
+    document.getElementById('loginRestore').addEventListener('change', (evt)=>{
+      importarRespaldo(evt, true); // true = desde login
+    });
+
+    const formLogin = document.getElementById('formLogin');
+    toUpperAll(formLogin);
+    formLogin.addEventListener('submit',(e)=>{
+      e.preventDefault();
+      const fd = new FormData(formLogin);
+      const u = (fd.get('usuario')||'').toUpperCase().trim();
+      const p = (fd.get('password')||'').toUpperCase().trim();
+      let role = 'capturista';
+      if(u==='ADMIN' && p==='MAPE') role = 'admin';
+      else if(u==='CAPTURISTA' && p==='MAPE') role = 'capturista';
+      else { alert('Credenciales inválidas (usa ADMIN/MAPE o CAPTURISTA/MAPE).'); return; }
+      localStorage.setItem(LS_KEYS.AUTH, JSON.stringify({logged:true, user:u, role, ts:Date.now()}));
+      loginModal.hide();
+      logActivity(`Inicio de sesión: <strong>${u}</strong> (<em>${role}</em>)`, true);
+      renderNominas(); renderEmpleados(); refreshKPIs();
+    });
+
+    function currentUser(){ return JSON.parse(localStorage.getItem(LS_KEYS.AUTH) || '{"user":"ANON","role":"capturista"}'); }
+    function isAdmin(){ return (currentUser().role === 'admin'); }
+
+    // ===================== SEED =====================
+    (function seed(){
+      let emp = getLS(LS_KEYS.EMP);
+      if(emp.length===0){
+        emp = [
+          {numero:'E001', nombre:'JUAN PÉREZ', sueldo:120, sueldoAguinaldo:120, linea:'CORTE',   puesto:'OPERARIO',   status:'activo', rejoinFrom:null, infonavitActivo:false, infonavitMonto:0, transporteActivo:true, transporteMonto:300, ingresoMape:'2025-01-02', ingresoIMSS:'2025-02-01'},
+          {numero:'E002', nombre:'ANA LÓPEZ',  sueldo:150, sueldoAguinaldo:150, linea:'ARMADO',  puesto:'SUPERVISORA',status:'activo', rejoinFrom:null, infonavitActivo:true,  infonavitMonto:250, transporteActivo:false, transporteMonto:300, ingresoMape:'2025-01-15', ingresoIMSS:'2025-03-10'},
+          {numero:'E003', nombre:'LUIS GARCÍA',sueldo:110, sueldoAguinaldo:110, linea:'PINTURA', puesto:'AYUDANTE',   status:'baja',   rejoinFrom:null, infonavitActivo:false, infonavitMonto:0,   transporteActivo:false, transporteMonto:300, ingresoMape:'', ingresoIMSS:''}
+        ];
+      } else {
+        emp = emp.map(e=>({
+          ...e,
+          // normalizar mayúsculas
+          numero: (e.numero||'').toString().toUpperCase(),
+          nombre: (e.nombre||'').toString().toUpperCase(),
+          linea: (e.linea||'').toString().toUpperCase(),
+          puesto:(e.puesto||'').toString().toUpperCase(),
+          status: e.status || 'activo',
+          sueldoAguinaldo: (e.sueldoAguinaldo!=null ? e.sueldoAguinaldo : e.sueldo),
+          rejoinFrom: ('rejoinFrom' in e) ? e.rejoinFrom : null,
+          infonavitActivo: ('infonavitActivo' in e) ? e.infonavitActivo : false,
+          infonavitMonto: ('infonavitMonto' in e) ? e.infonavitMonto : 0,
+          transporteActivo: ('transporteActivo' in e) ? e.transporteActivo : false,
+          transporteMonto: ('transporteMonto' in e) ? e.transporteMonto : 300,
+          ingresoMape: e.ingresoMape || '',
+          ingresoIMSS: e.ingresoIMSS || ''
+        }));
+      }
+      setLS(LS_KEYS.EMP, emp);
+      if(!Array.isArray(getLS(LS_KEYS.PLANS))) setLS(LS_KEYS.PLANS, []);
+      if(!Array.isArray(getLS(LS_KEYS.HIST))) setLS(LS_KEYS.HIST, []);
+      if(!Array.isArray(getLS(LS_KEYS.PAY))) setLS(LS_KEYS.PAY, []);
+      if(!getWeeksState()) setWeeksState({});
+    })();
+
+    // ===================== FECHAS / SEMANAS =====================
+    function toDateOnly(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+    function getMonday(d){
+      const date = toDateOnly(d);
+      const day = (date.getDay()+6)%7; // 0=>Mon
+      date.setDate(date.getDate()-day);
+      return date;
+    }
+    function getSundayFromMonday(mon){ const s = new Date(mon); s.setDate(s.getDate()+6); return s; }
+    function isoWeek(d){
+      const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      const dayNum = date.getUTCDay() || 7;
+      date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+      const weekNo = Math.ceil((((date - yearStart)/86400000) + 1)/7);
+      return {year: date.getUTCFullYear(), week: weekNo};
+    }
+    function fmtFecha(d){ const opts = {day:'2-digit', month:'short', year:'numeric'}; return d.toLocaleDateString('es-MX', opts).replace('.', ''); }
+    function fmtFechaCorta(d){ const opts = {year:'numeric',month:'2-digit',day:'2-digit'}; return d.toLocaleDateString('es-MX', opts); }
+    function currentWeekKey(){ const now = new Date(); const {year, week} = isoWeek(now); return `${year}-${String(week).padStart(2,'0')}`; }
+    function weekKeyFromISO(year, week){ return `${year}-${String(week).padStart(2,'0')}`; }
+    function mondaySundayFromISO(year, week){
+      const simple = new Date(Date.UTC(year, 0, 4));
+      const dayOfWeek = simple.getUTCDay() || 7;
+      const thursday = new Date(simple);
+      thursday.setUTCDate(4 - (dayOfWeek - 1) + (week - 1) * 7);
+      const monday = new Date(thursday);
+      monday.setUTCDate(thursday.getUTCDate() - ((thursday.getUTCDay()||7) - 1));
+      const monLocal = new Date(monday.getUTCFullYear(), monday.getUTCMonth(), monday.getUTCDate());
+      const sunLocal = new Date(monLocal); sunLocal.setDate(monLocal.getDate()+6);
+      return {monLocal, sunLocal};
+    }
+    function sumarMeses(fechaISO, n){
+      const d = new Date(fechaISO);
+      if(isNaN(d)) return null;
+      const r = new Date(d);
+      r.setMonth(r.getMonth()+n);
+      return r;
+    }
+    function getWeeksState(){ const raw = localStorage.getItem(LS_KEYS.WEEKS); return raw ? JSON.parse(raw) : null; }
+    function setWeeksState(obj){ localStorage.setItem(LS_KEYS.WEEKS, JSON.stringify(obj)); }
+    function isWeekClosed(key){ const st = getWeeksState(); return st[key]?.status === 'closed'; }
+    function setWeekStatus(key, status){ const st = getWeeksState() || {}; st[key] = {status}; setWeeksState(st); }
+    function paintWeekLabels(){
       const now = new Date();
-
-      if (now < startDate) {
-        countdown.innerHTML = "La cuenta regresiva comenzará el 19 de agosto.";
-        return;
+      const mon = getMonday(now);
+      const sun = getSundayFromMonday(mon);
+      const {year, week} = isoWeek(now);
+      document.getElementById('labelSemana').textContent = `Semana ${week}`;
+      document.getElementById('labelSemanaRango').textContent = `(${fmtFecha(mon)} – ${fmtFecha(sun)}, ${year})`;
+      const key = weekKeyFromISO(year, week);
+      const closed = isWeekClosed(key);
+      document.getElementById('btnCerrarSemana').classList.toggle('hidden', closed);
+      document.getElementById('btnReabrirSemana').classList.toggle('hidden', !closed);
+    }
+    window.cerrarSemana = function(){
+      const key = currentWeekKey();
+      if(confirm(`Vas a CERRAR la semana ${key}. ¿Confirmas?`)){
+        setWeekStatus(key,'closed');
+        paintWeekLabels();
+        logActivity(`Semana ${key} cerrada.`);
       }
-
-      const diff = endDate - now;
-
-      if (diff <= 0) {
-        countdown.innerHTML = "¡Hoy es el gran día! 🎉";
-        return;
+    };
+    window.reabrirSemana = function(){
+      const key = currentWeekKey();
+      if(confirm(`Vas a REABRIR la semana ${key}. ¿Confirmas?`)){
+        setWeekStatus(key,'open');
+        paintWeekLabels();
+        logActivity(`Semana ${key} reabierta.`);
       }
+    };
 
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((diff / (1000 * 60)) % 60);
-      const seconds = Math.floor((diff / 1000) % 60);
+    // ===================== NAVEGACIÓN =====================
+    window.navigate = function(view){
+      const ids = {dashboard:'view-dashboard', empleados:'view-empleados', nomina:'view-nomina', reportes:'view-reportes'};
+      Object.values(ids).forEach(id=>document.getElementById(id)?.classList.add('hidden'));
+      document.getElementById(ids[view])?.classList.remove('hidden');
+      if(view==='empleados') renderEmpleados();
+      if(view==='nomina'){ renderNominas(); paintWeekLabels(); }
+      if(view==='reportes'){ renderReportes(); }
+      refreshKPIs();
+      window.scrollTo({top:0,behavior:'smooth'});
+    };
 
-      countdown.innerHTML = `${days} días, ${hours}h ${minutes}m ${seconds}s`;
+    // ===================== MODALES =====================
+    const empModal = new bootstrap.Modal('#empleadoModal');
+    const pagoModal = new bootstrap.Modal('#pagoModal');
+    const modalEmpleados = new bootstrap.Modal('#empleadosModal');
+    const modalNominas   = new bootstrap.Modal('#nominasModal');
+    const modalPrestamos = new bootstrap.Modal('#prestamosModal');
+    const modalAguinaldo = new bootstrap.Modal('#aguinaldoModal');
+    const horasModal     = new bootstrap.Modal('#horasModal');
+    const estatusModal   = new bootstrap.Modal('#estatusModal');
+
+    // ===================== BUSCADOR EMPLEADOS =====================
+    const buscarEmp = document.getElementById('buscarEmp');
+    if (buscarEmp){ buscarEmp.addEventListener('input', renderEmpleados); }
+
+    // ===================== EMPLEADOS (render + edición + opciones) =====================
+    function badgeStatus(e){
+      return e.status==='baja'
+        ? '<span class="badge text-bg-danger">BAJA</span>'
+        : '<span class="badge text-bg-success">ACTIVO</span>';
+    }
+    function contratoBadge(e){
+      if(!e.ingresoIMSS){ return '<span class="badge text-bg-warning">COMPLETAR REGISTRO</span>'; }
+      const vence = sumarMeses(e.ingresoIMSS,3);
+      const hoy = new Date();
+      if(vence && hoy >= vence){
+        return `<span class="badge text-bg-success" title="Venció: ${fmtFechaCorta(vence)}">PLANTA</span>`;
+      } else if(vence){
+        return `<span class="badge text-bg-danger" title="Vence: ${fmtFechaCorta(vence)}">CONTRATO DE PRUEBA</span>`;
+      }
+      return '<span class="badge text-bg-warning">COMPLETAR REGISTRO</span>';
+    }
+    function renderEmpleados(){
+      const filtro = document.getElementById('filtroEstatus')?.value || 'todos';
+      const term = (document.getElementById('buscarEmp')?.value || '').toUpperCase().trim();
+      const tbody = document.querySelector('#tablaEmpleados tbody');
+      if(!tbody) return;
+      tbody.innerHTML = '';
+      getLS(LS_KEYS.EMP)
+        .filter(e => filtro==='todos' || e.status===filtro)
+        .filter(e => !term || e.nombre.toUpperCase().includes(term) || e.numero.toUpperCase().includes(term))
+        .forEach(e=>{
+          const tr = document.createElement('tr');
+          const opciones = `
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#" onclick="editarEmpleado('${e.numero}');return false;"><i class="bi bi-pencil-square"></i> Editar</a></li>
+              </ul>
+            </div>`;
+          tr.innerHTML = `
+            <td>${badgeStatus(e)}</td>
+            <td>${e.numero}</td>
+            <td>${e.nombre}</td>
+            <td>${e.linea||''}</td>
+            <td>${e.puesto||''}</td>
+            <td>$${Number(e.sueldo).toFixed(2)}</td>
+            <td>
+              <div class="form-check form-switch m-0">
+                <input class="form-check-input" type="checkbox" ${e.infonavitActivo?'checked':''} onchange="toggleInfonavit('${e.numero}', this.checked)">
+                <small class="text-muted ms-1" style="cursor:pointer" title="Editar monto Infonavit" onclick="editarMonto('infonavit','${e.numero}')">
+                  $${Number(e.infonavitMonto||0).toFixed(2)}
+                </small>
+              </div>
+              <div class="form-check form-switch m-0 mt-1">
+                <input class="form-check-input" type="checkbox" ${e.transporteActivo?'checked':''} onchange="toggleTransporte('${e.numero}', this.checked)">
+                <small class="text-muted ms-1" style="cursor:pointer" title="Editar monto Transporte" onclick="editarMonto('transporte','${e.numero}')">
+                  $${Number(e.transporteMonto||300).toFixed(2)}
+                </small>
+              </div>
+            </td>
+            <td>${e.ingresoMape ? fmtFechaCorta(new Date(e.ingresoMape)) : '-'}</td>
+            <td>${e.ingresoIMSS ? fmtFechaCorta(new Date(e.ingresoIMSS)) : '-'}</td>
+            <td>${contratoBadge(e)}</td>
+            <td class="text-end">${opciones}</td>`;
+          tbody.appendChild(tr);
+        });
+    }
+    window.renderEmpleados = renderEmpleados;
+
+    // Editar empleado
+    window.editarEmpleado = function(numero){
+      const lista = getLS(LS_KEYS.EMP);
+      const idx = lista.findIndex(e=>e.numero===numero);
+      if(idx<0) return;
+      const e = lista[idx];
+      // preparar modal en modo edición
+      document.getElementById('empleadoModalTitulo').textContent = 'Editar Empleado';
+      document.getElementById('editMode').value = '1';
+      document.getElementById('oldNumero').value = e.numero;
+      const form = document.getElementById('formEmpleado');
+      form.reset();
+      form.nombre.value = e.nombre;
+      form.numero.value = e.numero;
+      form.sueldo.value = e.sueldo;
+      form.sueldoAguinaldo.value = e.sueldoAguinaldo ?? e.sueldo;
+      form.infonavitActivo.value = e.infonavitActivo ? 'si':'no';
+      form.infonavitMonto.value = e.infonavitMonto || 0;
+      form.transporteActivo.value = e.transporteActivo ? 'si':'no';
+      form.transporteMonto.value = e.transporteMonto || 300;
+      form.linea.value = e.linea || '';
+      form.puesto.value = e.puesto || '';
+      form.ingresoMape.value = e.ingresoMape || '';
+      form.ingresoIMSS.value = e.ingresoIMSS || '';
+      toUpperAll(form);
+      empModal.show();
+    };
+
+    // Agregar empleado
+    window.openEmpleadoModal = function(){
+      const form = document.getElementById('formEmpleado');
+      form.reset();
+      document.getElementById('empleadoModalTitulo').textContent = 'Agregar Empleado';
+      document.getElementById('editMode').value = '0';
+      document.getElementById('oldNumero').value = '';
+      toUpperAll(form);
+      empModal.show();
+    };
+
+    // Guardar alta/edición
+    const formEmpleado = document.getElementById('formEmpleado');
+    toUpperAll(formEmpleado);
+    if (formEmpleado){
+      formEmpleado.addEventListener('submit', (ev)=>{
+        ev.preventDefault();
+        const f = new FormData(ev.target);
+        // Forzar mayúsculas en campos de texto
+        function U(x){ return (x||'').toUpperCase().trim(); }
+        const editMode = document.getElementById('editMode').value==='1';
+        const oldNumero= document.getElementById('oldNumero').value;
+
+        const numero = U(f.get('numero'));
+        const nombre = U(f.get('nombre'));
+        const sueldo = parseFloat(f.get('sueldo')||0);
+        const sueldoAguinaldo = f.get('sueldoAguinaldo')? parseFloat(f.get('sueldoAguinaldo')): sueldo;
+        const linea = U(f.get('linea'));
+        const puesto= U(f.get('puesto'));
+        const ingresoMape = f.get('ingresoMape') || '';
+        const ingresoIMSS = f.get('ingresoIMSS') || '';
+
+        if(!numero || !nombre){ return alert('Nombre y número de empleado son obligatorios.'); }
+        if(!(sueldo>=0) || !(sueldoAguinaldo>=0)) return alert('Sueldos no pueden ser negativos.');
+
+        const infAct = (f.get('infonavitActivo')||'no')==='si';
+        const infMonto = parseFloat(f.get('infonavitMonto')||0) || 0;
+        if(infAct && !(infMonto>0)) return alert('Monto de Infonavit debe ser > 0 si está activo.');
+
+        const trsAct = (f.get('transporteActivo')||'no')==='si';
+        const trsMonto = parseFloat(f.get('transporteMonto')||300) || 300;
+        if(trsAct && !(trsMonto>0)) return alert('Monto de Transporte debe ser > 0 si está activo.');
+
+        const lista = getLS(LS_KEYS.EMP);
+
+        if(editMode){
+          // Verificar duplicado si cambió el número
+          if(numero!==oldNumero && lista.some(x=>x.numero===numero)) return alert('El nuevo número de empleado ya existe.');
+          const idx = lista.findIndex(e=>e.numero===oldNumero);
+          if(idx<0) return;
+          const prev = lista[idx];
+          if(!confirm(`¿Confirmas actualizar la información del empleado #${oldNumero}?`)) return;
+          lista[idx] = {
+            ...prev,
+            numero, nombre, sueldo, sueldoAguinaldo, linea, puesto,
+            infonavitActivo: infAct, infonavitMonto: infAct? infMonto:0,
+            transporteActivo: trsAct, transporteMonto: trsAct? trsMonto:300,
+            ingresoMape, ingresoIMSS
+          };
+          setLS(LS_KEYS.EMP, lista);
+          logActivity(`Empleado actualizado: <strong>${nombre}</strong> (#${numero})`);
+        } else {
+          if(lista.some(x=>x.numero===numero)) return alert('El número de empleado ya existe.');
+          if(infAct){
+            if(!confirm(`Asignar Infonavit fijo de $${infMonto.toFixed(2)}. Se descontará por defecto. ¿Confirmas?`)){ return; }
+          }
+          if(trsAct){
+            if(!confirm(`Asignar Transporte fijo de $${trsMonto.toFixed(2)}. Se descontará por defecto. ¿Confirmas?`)){ return; }
+          }
+          const emp = {
+            numero, nombre, sueldo, sueldoAguinaldo, linea, puesto,
+            status:'activo', rejoinFrom:null,
+            infonavitActivo: infAct, infonavitMonto: infAct? infMonto:0,
+            transporteActivo: trsAct, transporteMonto: trsAct? trsMonto:300,
+            ingresoMape, ingresoIMSS
+          };
+          lista.push(emp); setLS(LS_KEYS.EMP, lista);
+          logActivity(`Empleado agregado: <strong>${emp.nombre}</strong> (#${emp.numero})`);
+        }
+        refreshKPIs(); renderEmpleados();
+        empModal.hide();
+      });
     }
 
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
+    // Cambiar estatus (igual que antes)
+    window.openEstatusModal = function(){
+      const sel = document.getElementById('statusEmpleado');
+      const empleados = getLS(LS_KEYS.EMP);
+      sel.innerHTML = empleados.map(e=>`<option value="${e.numero}">${e.numero} - ${e.nombre}</option>`).join('');
+      document.getElementById('statusValor').value='activo';
+      estatusModal.show();
+    };
+    const formEstatus = document.getElementById('formEstatus');
+    if(formEstatus){
+      formEstatus.addEventListener('submit',(e)=>{
+        e.preventDefault();
+        const numero = document.getElementById('statusEmpleado').value;
+        const valor  = document.getElementById('statusValor').value;
+        const lista = getLS(LS_KEYS.EMP);
+        const idx = lista.findIndex(emp=>emp.numero===numero);
+        if(idx<0) return;
+        const antes = lista[idx].status;
+        let msg = `Vas a cambiar el estatus de #${numero} de ${antes.toUpperCase()} a ${valor.toUpperCase()}.`;
+        if(antes==='baja' && valor==='activo'){
+          msg += `\n\nAviso: El cálculo de aguinaldo se reiniciará a partir de HOY (historial previo se conserva). ¿Confirmas?`;
+        }
+        if(!confirm(msg)) return;
+        const nowISO = new Date().toISOString();
+        lista[idx] = {
+          ...lista[idx],
+          status: valor,
+          rejoinFrom: (antes==='baja' && valor==='activo') ? nowISO : lista[idx].rejoinFrom
+        };
+        setLS(LS_KEYS.EMP, lista);
+        logActivity(`Estatus actualizado para #${numero}: <strong>${valor.toUpperCase()}</strong>`);
+        renderEmpleados(); refreshKPIs();
+        estatusModal.hide();
+      });
+    }
+
+    // Ajustes Infonavit/Transporte (igual base, mantiene mayúsculas)
+    window.editarMonto = function(tipo, numero){
+      const lista = getLS(LS_KEYS.EMP);
+      const idx = lista.findIndex(e=>e.numero===numero);
+      if(idx<0) return;
+      const propMonto = tipo==='infonavit' ? 'infonavitMonto' : 'transporteMonto';
+      const label     = tipo==='infonavit' ? 'Infonavit' : 'Transporte';
+      const actual    = Number(lista[idx][propMonto] || (tipo==='transporte'?300:0));
+      const val = prompt(`Nuevo monto para ${label} de #${numero}:`, actual.toFixed(2));
+      const m = parseFloat(val||'NaN');
+      if(!isFinite(m) || m<0){ alert('Monto inválido.'); return; }
+      if(!confirm(`Se actualizará el monto de ${label} de #${numero} a $${m.toFixed(2)}. ¿Confirmas?`)) return;
+      lista[idx][propMonto] = m;
+      setLS(LS_KEYS.EMP, lista);
+      logActivity(`Monto de ${label} actualizado para #${numero}: $${m.toFixed(2)}`);
+      renderEmpleados();
+    };
+    window.toggleInfonavit = function(numero, checked){
+      const lista = getLS(LS_KEYS.EMP);
+      const idx = lista.findIndex(e=>e.numero===numero);
+      if(idx<0) return;
+      if(checked && !(lista[idx].infonavitMonto>0)){
+        const val = prompt('Monto fijo de Infonavit (pesos):', (lista[idx].infonavitMonto||0).toFixed(2));
+        const m = parseFloat(val||'0');
+        if(!(m>0)){ alert('Monto inválido. Se dejará desactivado.'); renderEmpleados(); return; }
+        if(!confirm(`Se activará Infonavit fijo de $${m.toFixed(2)} para #${numero}. ¿Confirmas?`)){ renderEmpleados(); return; }
+        lista[idx].infonavitActivo = true; lista[idx].infonavitMonto = m;
+      }else if(!checked){
+        if(!confirm(`Se desactivará el descuento fijo de Infonavit para #${numero}. ¿Confirmas?`)){ renderEmpleados(); return; }
+        lista[idx].infonavitActivo = false;
+      }else{
+        if(!confirm(`Se activará el descuento fijo de Infonavit ($${Number(lista[idx].infonavitMonto).toFixed(2)}) para #${numero}. ¿Confirmas?`)){ renderEmpleados(); return; }
+        lista[idx].infonavitActivo = true;
+      }
+      setLS(LS_KEYS.EMP, lista);
+      logActivity(`Infonavit ${lista[idx].infonavitActivo?'activado':'desactivado'} para #${numero}`);
+      refreshKPIs(); renderEmpleados();
+    };
+    window.toggleTransporte = function(numero, checked){
+      const lista = getLS(LS_KEYS.EMP);
+      const idx = lista.findIndex(e=>e.numero===numero);
+      if(idx<0) return;
+      if(checked && !(lista[idx].transporteMonto>0)){
+        const val = prompt('Monto fijo de Transporte (pesos):', (lista[idx].transporteMonto||300).toFixed(2));
+        const m = parseFloat(val||'0');
+        if(!(m>0)){ alert('Monto inválido. Se dejará desactivado.'); renderEmpleados(); return; }
+        if(!confirm(`Se activará Transporte fijo de $${m.toFixed(2)} para #${numero}. ¿Confirmas?`)){ renderEmpleados(); return; }
+        lista[idx].transporteActivo = true; lista[idx].transporteMonto = m;
+      }else if(!checked){
+        if(!confirm(`Se desactivará el descuento fijo de Transporte para #${numero}. ¿Confirmas?`)){ renderEmpleados(); return; }
+        lista[idx].transporteActivo = false;
+      }else{
+        if(!confirm(`Se activará el descuento fijo de Transporte ($${Number(lista[idx].transporteMonto||300).toFixed(2)}) para #${numero}. ¿Confirmas?`)){ renderEmpleados(); return; }
+        lista[idx].transporteActivo = true;
+      }
+      setLS(LS_KEYS.EMP, lista);
+      logActivity(`Transporte ${lista[idx].transporteActivo?'activado':'desactivado'} para #${numero}`);
+      refreshKPIs(); renderEmpleados();
+    };
+
+    // ===================== HORAS HISTÓRICAS =====================
+    window.openHorasHistoricasModal = function(){
+      const sel = document.getElementById('histEmpleado');
+      const empleados = getLS(LS_KEYS.EMP);
+      sel.innerHTML = empleados.map(e=>`<option value="${e.numero}">${e.numero} - ${e.nombre}</option>`).join('');
+      document.getElementById('histFecha').value = new Date().toISOString().slice(0,10);
+      document.getElementById('histHoras').value = '';
+      horasModal.show();
+    };
+    const formHoras = document.getElementById('formHoras');
+    if(formHoras){
+      formHoras.addEventListener('submit',(e)=>{
+        e.preventDefault();
+        const numero = document.getElementById('histEmpleado').value;
+        const horas  = parseFloat(document.getElementById('histHoras').value||0);
+        const fecha  = document.getElementById('histFecha').value;
+        if(!(horas>0)) return alert('Ingresa horas válidas.');
+        if(horas>120) return alert('Por seguridad, máximo 120 horas por semana.');
+        if(!confirm(`Agregar ${horas} horas al historial de #${numero} (${fecha}). ¿Confirmas?`)) return;
+        const hist = getLS(LS_KEYS.HIST);
+        hist.push({numero, horas, fecha});
+        setLS(LS_KEYS.HIST, hist);
+        logActivity(`Horas históricas agregadas a #${numero}: ${horas}h (${fecha})`);
+        refreshKPIs();
+        horasModal.hide();
+      });
+    }
+
+    // ===================== PLANES DE DEDUCCIÓN =====================
+    function crearPlan(numero, tipo, detalle, total, parcialidades){
+      if(!confirm(`Crear plan de deducción para #${numero} por $${Number(total).toFixed(2)} en ${parcialidades} parcialidades fijas. ¿Confirmas?`)) return null;
+      const cuota = total / parcialidades;
+      const plan = {
+        id: 'PLN-'+Date.now()+'-'+Math.floor(Math.random()*10000),
+        numero, tipo, detalle: (detalle||'').toUpperCase(),
+        total: Number(total),
+        parcialidadesTotales: parseInt(parcialidades),
+        realizadas: 0,
+        cuota: Number(cuota.toFixed(2)),
+        restante: Number(total.toFixed(2)),
+        activo: true
+      };
+      const planes = getLS(LS_KEYS.PLANS); planes.push(plan); setLS(LS_KEYS.PLANS, planes);
+      logActivity(`Plan creado para #${numero}: ${tipo} ${parcialidades} parcialidades de $${plan.cuota.toFixed(2)}`);
+      return plan;
+    }
+    function planesActivosDe(numero){ return getLS(LS_KEYS.PLANS).filter(p=>p.numero===numero && p.activo); }
+    function aplicarCuotasPlanesALista(numero, listaDedu){
+      const activos = planesActivosDe(numero);
+      activos.forEach(p=>{
+        listaDedu.push({ tipo: p.tipo, monto: p.cuota, detalle: `Plan ${p.realizadas+1}/${p.parcialidadesTotales}`, planId: p.id });
+      });
+    }
+    function liquidarSiCorresponde(plan){
+      if(plan.realizadas >= plan.parcialidadesTotales || plan.restante <= 0.009){
+        plan.activo = false;
+        logActivity(`Préstamo/plan liquidado para #${plan.numero}`);
+      }
+    }
+
+    // ===================== NÓMINA / PAGOS =====================
+    let deduccionesTmp = [];
+    window.openPagoModal = function(){
+      const key = currentWeekKey();
+      if(isWeekClosed(key)){
+        alert(`La semana ${key} está CERRADA. Reabre la semana para poder registrar pagos.`);
+        return;
+      }
+      resetPagoForm(); pagoModal.show();
+    };
+
+    function resetPagoForm(){
+      const formPago = document.getElementById('formPago');
+      if(!formPago) return;
+      formPago.reset();
+      toUpperAll(formPago);
+      const sug = document.getElementById('sugerencias');
+      if (sug){ sug.innerHTML=''; sug.classList.add('hidden'); }
+      document.getElementById('empleadoSeleccionado').value='';
+      deduccionesTmp = []; pintarDeducciones(); previewTotal();
+    }
+
+    // Autocompletado por nombre (upper)
+    const inputBuscar = document.getElementById('buscarEmpleado');
+    if (inputBuscar){
+      inputBuscar.addEventListener('input', ()=>{
+        inputBuscar.value = (inputBuscar.value||'').toUpperCase();
+        const term = inputBuscar.value.toUpperCase();
+        const list = getLS(LS_KEYS.EMP).filter(e=>e.nombre.toUpperCase().includes(term));
+        const box = document.getElementById('sugerencias');
+        box.innerHTML = '';
+        if(term.length<1 || list.length===0){ box.classList.add('hidden'); return; }
+        list.slice(0,10).forEach(e=>{
+          const div = document.createElement('div');
+          div.className='suggest-item';
+          div.textContent = `${e.nombre} (#${e.numero})`;
+          div.onclick = ()=>{
+            inputBuscar.value = e.nombre;
+            document.getElementById('empleadoSeleccionado').value = e.numero;
+            box.classList.add('hidden');
+            // Reset dedus y aplicar fijas (planes + Infonavit + Transporte)
+            deduccionesTmp = [];
+            const emp = getLS(LS_KEYS.EMP).find(x=>x.numero===e.numero);
+            if(emp && emp.status==='activo'){
+              if(emp.infonavitActivo && emp.infonavitMonto>0){
+                deduccionesTmp.push({tipo:'Infonavit', monto:Number(emp.infonavitMonto), detalle:'Fijo', fijo:true});
+              }
+              if(emp.transporteActivo && (emp.transporteMonto||300)>0){
+                deduccionesTmp.push({tipo:'Transporte', monto:Number(emp.transporteMonto||300), detalle:'Fijo', fijo:true});
+              }
+            }
+            aplicarCuotasPlanesALista(e.numero, deduccionesTmp);
+            pintarDeducciones();
+            previewTotal();
+          };
+          box.appendChild(div);
+        });
+        box.classList.remove('hidden');
+      });
+    }
+
+    window.agregarDeduccion = function(){
+      const numero = document.getElementById('empleadoSeleccionado').value;
+      if(!numero) return alert('Primero selecciona el empleado.');
+      const tipo = document.getElementById('tipoDedu').value;
+      const montoTotal = parseFloat(document.getElementById('montoDedu').value||0);
+      const detalle = (document.getElementById('detalleDedu').value||'').toUpperCase().trim();
+      if(!tipo || !(montoTotal>0)) return alert('Selecciona un tipo y monto válido.');
+
+      const unaExhib = confirm('¿Pagar en una sola exhibición?');
+      if(unaExhib){
+        if(!confirm(`Se descontará $${montoTotal.toFixed(2)} en esta nómina. ¿Confirmas?`)) return;
+        deduccionesTmp.push({tipo, monto:montoTotal, detalle: detalle || tipo});
+      }else{
+        let parc = prompt('¿En cuántas parcialidades se pagará? (número entero > 1)');
+        let n = parseInt(parc,10);
+        if(!(n>1)) return alert('Número de parcialidades inválido.');
+        const plan = crearPlan(numero, tipo, detalle, montoTotal, n);
+        if(!plan) return; // cancelado
+        deduccionesTmp.push({tipo, monto:plan.cuota, detalle:`Plan 1/${n}`, planId: plan.id});
+      }
+
+      document.getElementById('montoDedu').value=''; document.getElementById('detalleDedu').value='';
+      pintarDeducciones(); previewTotal();
+    };
+
+    function pintarDeducciones(){
+      const ul = document.getElementById('listaDeducciones');
+      if(!ul) return;
+      ul.innerHTML='';
+      if(deduccionesTmp.length===0){ ul.innerHTML = '<li class="list-group-item text-muted">Sin deducciones</li>'; return; }
+      deduccionesTmp.forEach((d,idx)=>{
+        const li = document.createElement('li');
+        li.className='list-group-item d-flex justify-content-between align-items-center';
+        const planTag = d.planId ? ' <span class="badge text-bg-info ms-1">Parcialidad</span>' : '';
+        const fijoTag = d.fijo ? ' <span class="badge text-bg-warning ms-1">Fijo</span>' : '';
+        li.innerHTML = `<span>${d.tipo}${d.detalle? ' - '+d.detalle:''}${planTag}${fijoTag}</span><span class="badge text-bg-secondary">$${d.monto.toFixed(2)}</span>`;
+        const btn = document.createElement('button');
+        btn.className='btn btn-sm btn-outline-danger';
+        btn.innerHTML='<i class="bi bi-x"></i>';
+        btn.onclick=()=>{deduccionesTmp.splice(idx,1); pintarDeducciones(); previewTotal();};
+        li.appendChild(btn);
+        ul.appendChild(li);
+      });
+    }
+
+    const formPago = document.getElementById('formPago');
+    if (formPago){
+      formPago.addEventListener('input', previewTotal);
+      formPago.addEventListener('submit', (ev)=>{
+        ev.preventDefault();
+        const key = currentWeekKey();
+        if(isWeekClosed(key)){ alert(`La semana ${key} está CERRADA. Reabre para registrar pagos.`); return; }
+
+        const numero = document.getElementById('empleadoSeleccionado').value;
+        const emp = getLS(LS_KEYS.EMP).find(e=>e.numero===numero);
+        if(!emp) return alert('Selecciona un empleado de la lista de sugerencias.');
+        const f = new FormData(ev.target);
+        const horas = parseFloat(f.get('horas')||0);
+        const extras = parseFloat(f.get('extras')||0);
+        const bonos = parseFloat(f.get('bonos')||0);
+
+        if(horas<0 || extras<0 || bonos<0) return alert('No se permiten valores negativos.');
+        if(horas>120) return alert('Por seguridad, máximo 120 horas por semana.');
+
+        const deds = deduccionesTmp.reduce((a,b)=>a+Number(b.monto),0);
+        const total = (horas*emp.sueldo)+extras+bonos-deds;
+
+        const now = new Date();
+        const iso = isoWeek(now);
+        const nominas = getLS(LS_KEYS.PAY);
+        nominas.push({
+          fecha: now.toISOString(),
+          fechaOnly: now.toISOString().slice(0,10), // para reportes sin hora
+          numero: emp.numero,
+          nombre: emp.nombre,
+          horas, sueldoHora:emp.sueldo, extras, bonos,
+          deducciones: deduccionesTmp, total,
+          weekYear: iso.year, week: iso.week
+        });
+        setLS(LS_KEYS.PAY, nominas);
+
+        // Avance de planes
+        let planes = getLS(LS_KEYS.PLANS);
+        deduccionesTmp.filter(x=>x.planId).forEach(x=>{
+          const plan = planes.find(p=>p.id===x.planId);
+          if(plan && plan.activo){
+            plan.realizadas += 1;
+            plan.restante = Number((plan.restante - plan.cuota).toFixed(2));
+            liquidarSiCorresponde(plan);
+          }
+        });
+        setLS(LS_KEYS.PLANS, planes);
+
+        logActivity(`Nómina calculada para <strong>${emp.nombre}</strong>: $${total.toFixed(2)} (Sem ${iso.year}-${String(iso.week).padStart(2,'0')})`);
+        refreshKPIs(); renderNominas();
+        pagoModal.hide();
+      });
+    }
+
+    function previewTotal(){
+      const numero = document.getElementById('empleadoSeleccionado').value;
+      const horas = parseFloat(document.querySelector('[name="horas"]')?.value||0);
+      const extras = parseFloat(document.querySelector('[name="extras"]')?.value||0);
+      const bonos = parseFloat(document.querySelector('[name="bonos"]')?.value||0);
+      const emp = getLS(LS_KEYS.EMP).find(e=>e.numero===numero);
+      const sueldoHora = emp? Number(emp.sueldo):0;
+      const deds = deduccionesTmp.reduce((a,b)=>a+Number(b.monto),0);
+      const total = (horas*sueldoHora) + extras + bonos - deds;
+      document.getElementById('totalPreview').textContent = `$${total.toFixed(2)}`;
+    }
+
+    function renderNominas(){
+      const data = getLS(LS_KEYS.PAY);
+      const cont = document.getElementById('nominaListado');
+      if(!cont) return;
+      if(data.length===0){ cont.textContent = 'Aún no hay nóminas registradas.'; return; }
+      cont.innerHTML = '';
+      data.slice().reverse().forEach(p=>{
+        const fecha = new Date(p.fecha);
+        const fechaSolo = fecha.toLocaleDateString('es-MX'); // sin hora (solo para esta vista de listado)
+        const deds = p.deducciones.map(d=>`${d.tipo}${d.detalle? ' ('+d.detalle+')':''}: $${Number(d.monto).toFixed(2)}`).join(' · ') || 'Sin deducciones';
+        const wk = `${p.weekYear}-${String(p.week).padStart(2,'0')}`;
+        div = document.createElement('div');
+        div.className='border rounded p-2 mb-2';
+        div.innerHTML = `<strong>${p.nombre}</strong> (#${p.numero}) — ${fechaSolo} — <span class="badge text-bg-light">Sem ${wk}</span><br>
+          Horas: ${p.horas} × $${p.sueldoHora.toFixed(2)} | Extras: $${p.extras.toFixed(2)} | Bonos: $${p.bonos.toFixed(2)} | <em>Deducciones:</em> ${deds}<br>
+          <strong>Total: $${p.total.toFixed(2)}</strong>`;
+        cont.appendChild(div);
+      });
+    }
+    window.renderNominas = renderNominas;
+
+    // ===================== KPIs & Actividades =====================
+    function logActivity(html, system=false){
+      const user = currentUser();
+      const act = getLS(LS_KEYS.ACT);
+      act.push({html:(system? html : `[${user.user}] ${html}`), ts:Date.now()});
+      setLS(LS_KEYS.ACT, act);
+      paintActivities();
+    }
+    function paintActivities(){
+      const wrap = document.getElementById('activityLog');
+      if(!wrap) return;
+      const act = getLS(LS_KEYS.ACT).slice().reverse().slice(0,6);
+      if(act.length===0){ wrap.innerHTML = '<p class="text-muted mb-0">No hay actividades recientes. ¡Comienza agregando empleados!</p>'; return; }
+      wrap.innerHTML='';
+      act.forEach(a=>{
+        const p = document.createElement('div');
+        p.className='border-bottom py-2';
+        p.innerHTML = `${new Date(a.ts).toLocaleString()} — ${a.html}`;
+        wrap.appendChild(p);
+      });
+    }
+
+    function horasAcumuladasEmpleado(numero){
+      const emp = getLS(LS_KEYS.EMP).find(e=>e.numero===numero);
+      const cutoff = emp?.rejoinFrom ? new Date(emp.rejoinFrom) : null;
+      const nominas = getLS(LS_KEYS.PAY)
+        .filter(n=>n.numero===numero && (!cutoff || new Date(n.fecha)>=cutoff))
+        .reduce((a,n)=>a+n.horas,0);
+      const hist = getLS(LS_KEYS.HIST)
+        .filter(h=>h.numero===numero && (!cutoff || new Date(h.fecha)>=cutoff))
+        .reduce((a,h)=>a+Number(h.horas||0),0);
+      return nominas + hist;
+    }
+
+    function refreshKPIs(){
+      const empleados = getLS(LS_KEYS.EMP);
+      const nominas = getLS(LS_KEYS.PAY);
+      const activos = empleados.filter(e=>e.status==='activo').length;
+      document.getElementById('kpiEmpleados').textContent = activos;
+      document.getElementById('kpiNominas').textContent = nominas.length;
+
+      // Aguinaldo total (solo activos)
+      let totalAguinaldo=0;
+      empleados.forEach(emp=>{
+        if(emp.status!=='activo') return;
+        const horas = horasAcumuladasEmpleado(emp.numero);
+        const sAgui = (emp.sueldoAguinaldo!=null ? emp.sueldoAguinaldo : emp.sueldo);
+        totalAguinaldo += (sAgui*horas)*0.20;
+      });
+      document.getElementById('kpiAguinaldo').textContent = `$${totalAguinaldo.toFixed(2)}`;
+
+      // Préstamos activos
+      const planesActivos = getLS(LS_KEYS.PLANS).filter(p=>p.activo).length;
+      document.getElementById('kpiPrestamos').textContent = Number.isFinite(planesActivos)? planesActivos: 0;
+
+      paintActivities();
+    }
+    window.refreshKPIs = refreshKPIs;
+
+    // ===================== MODALES KPI LISTAS (con borrar en nóminas) =====================
+    window.abrirEmpleadosModal = function(){
+      const lista=getLS(LS_KEYS.EMP);
+      const div=document.getElementById('listaEmpleados');
+      div.innerHTML = lista.length? '' : '<div class="text-muted">Sin empleados.</div>';
+      lista.forEach(e=>{
+        div.innerHTML+=`<div>${e.numero} - ${e.nombre} ${badgeStatus(e)}</div>`;
+      });
+      modalEmpleados.show();
+    };
+
+    window.abrirNominasModal = function(){
+      const lista=getLS(LS_KEYS.PAY);
+      const div=document.getElementById('listaNominas');
+      div.innerHTML = lista.length? '' : '<div class="text-muted">Sin nóminas.</div>';
+      lista.forEach((n,i)=>{
+        const wk = `${n.weekYear}-${String(n.week).padStart(2,'0')}`;
+        const weekKey = wk;
+        const closed = isWeekClosed(weekKey);
+        const disabled = (!isAdmin() || closed) ? 'disabled' : '';
+        const title = closed ? ' title="Semana cerrada: no se puede borrar"' : '';
+        const fechaSolo = n.fechaOnly ? n.fechaOnly : new Date(n.fecha).toISOString().slice(0,10);
+        div.innerHTML+=`
+          <div class="border rounded p-2 mb-2 d-flex justify-content-between align-items-center">
+            <div style="cursor:pointer" onclick="detalleNomina(${i})">
+              ${fechaSolo} — <strong>${n.nombre}</strong> (#${n.numero}) — $${n.total.toFixed(2)} <span class="badge text-bg-light ms-1">Sem ${wk}</span>
+            </div>
+            <button class="btn btn-danger btn-sm" ${disabled}${title} onclick="borrarNomina(${i})"><i class="bi bi-trash"></i></button>
+          </div>`;
+      });
+      modalNominas.show();
+    };
+
+    window.detalleNomina = function(i){
+      const n=getLS(LS_KEYS.PAY)[i];
+      const deds = n.deducciones.map(d=>`${d.tipo}${d.detalle? ' ('+d.detalle+')':''}: $${Number(d.monto).toFixed(2)}`).join(' · ') || 'Sin deducciones';
+      const fechaSolo = n.fechaOnly ? n.fechaOnly : new Date(n.fecha).toISOString().slice(0,10);
+      alert(`Detalle de ${n.nombre} (#${n.numero})
+Fecha: ${fechaSolo}
+Semana: ${n.weekYear}-${String(n.week).padStart(2,'0')}
+Horas: ${n.horas} × $${n.sueldoHora.toFixed(2)}
+Extras: $${n.extras.toFixed(2)} | Bonos: $${n.bonos.toFixed(2)}
+Deducciones: ${deds}
+TOTAL: $${n.total.toFixed(2)}`);
+    };
+
+    window.borrarNomina = function(i){
+      const lista=getLS(LS_KEYS.PAY);
+      const n = lista[i];
+      const wk = `${n.weekYear}-${String(n.week).padStart(2,'0')}`;
+      if(isWeekClosed(wk)){ alert('No se puede borrar una nómina de una semana cerrada.'); return; }
+      if(!isAdmin()){ alert('Solo un administrador puede borrar nóminas.'); return; }
+      if(!confirm('¿Borrar esta nómina? Esta acción eliminará el registro y sus deducciones.')) return;
+      lista.splice(i,1);
+      setLS(LS_KEYS.PAY,lista);
+      abrirNominasModal();
+      refreshKPIs();
+      renderNominas();
+      logActivity('Se eliminó una nómina.');
+    };
+
+    window.abrirPrestamosModal = function(){
+      const planes = getLS(LS_KEYS.PLANS);
+      const div=document.getElementById('listaPrestamos');
+      const empIndex = Object.fromEntries(getLS(LS_KEYS.EMP).map(e=>[e.numero,e.nombre]));
+      const activos = planes.filter(p=>p.activo);
+      div.innerHTML = activos.length? '' : '<div class="text-muted">Sin préstamos/planes activos.</div>';
+      activos.forEach(p=>{
+        const faltan = Math.max(0, p.parcialidadesTotales - p.realizadas);
+        div.innerHTML += `
+          <div class="border rounded p-2 mb-2">
+            <strong>${empIndex[p.numero]||('#'+p.numero)}</strong><br>
+            ${p.tipo}${p.detalle? ' - '+p.detalle:''}<br>
+            Total: $${p.total.toFixed(2)} — Cuota: $${p.cuota.toFixed(2)} — Pagadas: ${p.realizadas}/${p.parcialidadesTotales} — Restante: $${p.restante.toFixed(2)} ${faltan? `(faltan ${faltan})`: '(liquidado)'}
+          </div>`;
+      });
+      modalPrestamos.show();
+    };
+
+    // Aguinaldo acumulado por empleado
+    window.abrirAguinaldoModal = function(){
+      const empleados=getLS(LS_KEYS.EMP);
+      const div=document.getElementById('listaAguinaldo');
+      div.innerHTML = empleados.length? '' : '<div class="text-muted">Sin empleados.</div>';
+      empleados.forEach(e=>{
+        if(e.status!=='activo'){
+          div.innerHTML+=`<div class="border rounded p-2 mb-2">
+            <strong>${e.nombre}</strong> (#${e.numero}) — <span class="badge text-bg-danger">BAJA</span><br>
+            (Sin cálculo vigente por estar en baja)
+          </div>`;
+          return;
+        }
+        const horas = horasAcumuladasEmpleado(e.numero);
+        const sAgui = (e.sueldoAguinaldo!=null ? e.sueldoAguinaldo : e.sueldo);
+        const aguinaldo = (sAgui * horas) * 0.20;
+        div.innerHTML+=`<div class="border rounded p-2 mb-2">
+          <strong>${e.nombre}</strong> (#${e.numero}) — Horas acumuladas: ${horas}<br>
+          <em>Salario por hora para aguinaldo:</em> $${sAgui.toFixed(2)} — <strong>Aguinaldo acumulado: $${aguinaldo.toFixed(2)}</strong>
+        </div>`;
+      });
+      modalAguinaldo.show();
+    };
+
+    // ===================== REPORTES =====================
+    function renderReportes(){
+      renderReporteNomina();
+      renderReporteAguinaldoSemanas();
+      renderReporteGeneral();
+      renderReporteIMSS();
+      renderReporteAuditoria();
+    }
+
+    function renderReporteNomina(){
+      const cont = document.getElementById('reporteNomina');
+      const data = getLS(LS_KEYS.PAY).slice().reverse();
+      if(!data.length){ cont.innerHTML = '<div class="text-muted">Sin registros.</div>'; return; }
+      let html = '';
+      data.forEach(p=>{
+        const wk = `${p.weekYear}-${String(p.week).padStart(2,'0')}`;
+        const deds = p.deducciones.map(d=>`${d.tipo}${d.detalle? ' ('+d.detalle+')':''}: $${Number(d.monto).toFixed(2)}`).join(' · ') || 'Sin deducciones';
+        const fechaSolo = p.fechaOnly ? p.fechaOnly : new Date(p.fecha).toISOString().slice(0,10);
+        html += `<div class="border rounded p-2 mb-2">
+          <strong>${p.nombre}</strong> (#${p.numero}) — ${fechaSolo} — <span class="badge text-bg-light">Sem ${wk}</span><br>
+          Horas: ${p.horas} × $${p.sueldoHora.toFixed(2)} | Extras: $${p.extras.toFixed(2)} | Bonos: $${p.bonos.toFixed(2)} | <em>Deducciones:</em> ${deds}<br>
+          <strong>Total: $${p.total.toFixed(2)}</strong>
+        </div>`;
+      });
+      cont.innerHTML = html;
+    }
+
+    function horasPorSemana(empleadoNumero){
+      const emp = getLS(LS_KEYS.EMP).find(e=>e.numero===empleadoNumero);
+      const cutoff = emp?.rejoinFrom ? new Date(emp.rejoinFrom) : null;
+      const mapa = {};
+      getLS(LS_KEYS.PAY).forEach(n=>{
+        if(n.numero!==empleadoNumero) return;
+        if(cutoff && new Date(n.fecha) < cutoff) return;
+        const wk = weekKeyFromISO(n.weekYear, n.week);
+        mapa[wk] = (mapa[wk]||0) + Number(n.horas||0);
+      });
+      getLS(LS_KEYS.HIST).forEach(h=>{
+        if(h.numero!==empleadoNumero) return;
+        const d = new Date(h.fecha);
+        if(cutoff && d < cutoff) return;
+        const isow = isoWeek(d);
+        const wk = weekKeyFromISO(isow.year, isow.week);
+        mapa[wk] = (mapa[wk]||0) + Number(h.horas||0);
+      });
+      return mapa;
+    }
+
+    function renderReporteAguinaldoSemanas(){
+      const cont = document.getElementById('reporteAguinaldoSemanas');
+      const empleados = getLS(LS_KEYS.EMP).filter(e=>e.status==='activo');
+      if(!empleados.length){ cont.innerHTML = '<div class="text-muted">Sin empleados activos.</div>'; return; }
+      const semanasSet = new Set();
+      const horasPorEmp = {};
+      empleados.forEach(e=>{
+        const mapa = horasPorSemana(e.numero);
+        horasPorEmp[e.numero] = mapa;
+        Object.keys(mapa).forEach(k=>semanasSet.add(k));
+      });
+      const semanas = Array.from(semanasSet).sort();
+      if(!semanas.length){ cont.innerHTML = '<div class="text-muted">Sin datos semanales.</div>'; return; }
+
+      let html = '';
+      semanas.forEach(wk=>{
+        const [year, ww] = wk.split('-').map(x=>parseInt(x,10));
+        const {monLocal, sunLocal} = mondaySundayFromISO(year, ww);
+        html += `<div class="border rounded p-2 mb-2">
+          <strong>Semana ${ww} (${fmtFecha(monLocal)} – ${fmtFecha(sunLocal)} ${year})</strong><br>`;
+        empleados.forEach(e=>{
+          const horas = horasPorEmp[e.numero][wk] || 0;
+          if(horas<=0) return;
+          const sAgui = (e.sueldoAguinaldo!=null ? e.sueldoAguinaldo : e.sueldo);
+          const agui = (sAgui * horas) * 0.20;
+          html += `<div class="ms-1">• ${e.nombre} (#${e.numero}): $${agui.toFixed(2)}</div>`;
+        });
+        html += `</div>`;
+      });
+      cont.innerHTML = html;
+    }
+
+    function renderReporteGeneral(){
+      const cont = document.getElementById('reporteGeneral');
+      const empleados = getLS(LS_KEYS.EMP).filter(e=>e.status==='activo');
+      if(!empleados.length){ cont.innerHTML = '<div class="text-muted">Sin empleados activos.</div>'; return; }
+      let totalHoras = 0, totalAguinaldo = 0;
+      let html = '';
+      empleados.forEach(e=>{
+        const horas = horasAcumuladasEmpleado(e.numero);
+        const sAgui = (e.sueldoAguinaldo!=null ? e.sueldoAguinaldo : e.sueldo);
+        const agui = (sAgui * horas) * 0.20;
+        totalHoras += horas; totalAguinaldo += agui;
+        html += `<div class="border rounded p-2 mb-2">
+          <strong>${e.nombre}</strong> (#${e.numero}) — Horas totales: ${horas} | Aguinaldo total: <strong>$${agui.toFixed(2)}</strong>
+        </div>`;
+      });
+      html += `<div class="border rounded p-2">
+        <strong>Totales generales:</strong> Horas: ${totalHoras} | Aguinaldo: <strong>$${totalAguinaldo.toFixed(2)}</strong>
+      </div>`;
+      cont.innerHTML = html;
+    }
+
+    function renderReporteIMSS(){
+      const cont = document.getElementById('reporteIMSS');
+      const empleados = getLS(LS_KEYS.EMP);
+      if(!empleados.length){ cont.innerHTML = '<div class="text-muted">Sin empleados.</div>'; return; }
+      let html = '';
+      empleados.forEach(e=>{
+        const fIMSS = e.ingresoIMSS ? new Date(e.ingresoIMSS) : null;
+        const vence = e.ingresoIMSS ? sumarMeses(e.ingresoIMSS,3) : null;
+        const badge = contratoBadge(e);
+        html += `<div class="border rounded p-2 mb-2">
+          <strong>${e.nombre}</strong> (#${e.numero})<br>
+          Ingreso IMSS: ${fIMSS ? fmtFechaCorta(fIMSS) : '-'} — Vence 3 meses: ${vence ? fmtFechaCorta(vence) : '-'} — ${badge}
+        </div>`;
+      });
+      cont.innerHTML = html;
+    }
+
+    function renderReporteAuditoria(){
+      const cont = document.getElementById('reporteAuditoria');
+      const act = getLS(LS_KEYS.ACT).slice().reverse();
+      if(!act.length){ cont.innerHTML = '<div class="text-muted">Sin eventos.</div>'; return; }
+      cont.innerHTML = act.map(a=>`<div class="border rounded p-2 mb-2">${new Date(a.ts).toLocaleString()} — ${a.html}</div>`).join('');
+    }
+
+    // ===================== EXPORTS (CSV & PDF) =====================
+    // Nómina (sin hora)
+    window.exportarCSV = function(){
+      const nominas = getLS(LS_KEYS.PAY);
+      const encabezados = ['fecha','weekKey','numero','nombre','horas','sueldoHora','extras','bonos','deducciones','total'];
+      const filas = nominas.map(n=>{
+        const wk = `${n.weekYear}-${String(n.week).padStart(2,'0')}`;
+        const deds = n.deducciones.map(d=>`${d.tipo}:${d.monto}${d.detalle? '('+d.detalle+')':''}`).join('|');
+        const fechaSolo = n.fechaOnly ? n.fechaOnly : new Date(n.fecha).toISOString().slice(0,10);
+        return [fechaSolo, wk, n.numero, n.nombre, n.horas, n.sueldoHora, n.extras, n.bonos, deds, n.total];
+      });
+      let csv = encabezados.join(',')+'\n'+filas.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\n');
+      downloadBlob(csv, 'text/csv;charset=utf-8;', 'nominas.csv');
+    };
+
+    window.exportarAguinaldoSemanasCSV = function(){
+      const empleados = getLS(LS_KEYS.EMP).filter(e=>e.status==='activo');
+      const semanasSet = new Set();
+      const horasPorEmp = {};
+      empleados.forEach(e=>{
+        const mapa = horasPorSemana(e.numero);
+        horasPorEmp[e.numero] = mapa;
+        Object.keys(mapa).forEach(k=>semanasSet.add(k));
+      });
+      const semanas = Array.from(semanasSet).sort();
+      const encabezados = ['weekKey','semana','rango','numero','nombre','aguinaldo_semana'];
+      const filas = [];
+      semanas.forEach(wk=>{
+        const [year, ww] = wk.split('-').map(x=>parseInt(x,10));
+        const {monLocal, sunLocal} = mondaySundayFromISO(year, ww);
+        const rango = `${fmtFecha(monLocal)} – ${fmtFecha(sunLocal)} ${year}`;
+        empleados.forEach(e=>{
+          const horas = horasPorEmp[e.numero][wk] || 0;
+          if(horas<=0) return;
+          const sAgui = (e.sueldoAguinaldo!=null ? e.sueldoAguinaldo : e.sueldo);
+          const agui = (sAgui * horas) * 0.20;
+          filas.push([wk, ww, rango, e.numero, e.nombre, agui.toFixed(2)]);
+        });
+      });
+      let csv = encabezados.join(',')+'\n'+filas.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\n');
+      downloadBlob(csv, 'text/csv;charset=utf-8;', 'aguinaldo_por_semana.csv');
+    };
+
+    window.exportarGeneralCSV = function(){
+      const empleados = getLS(LS_KEYS.EMP).filter(e=>e.status==='activo');
+      const encabezados = ['numero','nombre','horas_totales','sueldo_hora_aguinaldo','aguinaldo_total'];
+      const filas = [];
+      let totalHoras = 0, totalAgui = 0;
+      empleados.forEach(e=>{
+        const horas = horasAcumuladasEmpleado(e.numero);
+        const sAgui = (e.sueldoAguinaldo!=null ? e.sueldoAguinaldo : e.sueldo);
+        const agui = (sAgui * horas) * 0.20;
+        totalHoras += horas; totalAgui += agui;
+        filas.push([e.numero, e.nombre, horas, sAgui.toFixed(2), agui.toFixed(2)]);
+      });
+      filas.push(['TOTAL','',''+totalHoras,'', totalAgui.toFixed(2)]);
+      let csv = encabezados.join(',')+'\n'+filas.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\n');
+      downloadBlob(csv, 'text/csv;charset=utf-8;', 'reporte_general.csv');
+    };
+
+    window.exportarIMSSCSV = function(){
+      const empleados = getLS(LS_KEYS.EMP);
+      const encabezados = ['numero','nombre','ingreso_imss','vence_3_meses','estatus'];
+      const filas = [];
+      empleados.forEach(e=>{
+        const fIMSS = e.ingresoIMSS ? new Date(e.ingresoIMSS) : null;
+        const vence = e.ingresoIMSS ? sumarMeses(e.ingresoIMSS,3) : null;
+        let est = 'COMPLETAR REGISTRO';
+        if(vence){
+          est = (new Date()>=vence) ? 'PLANTA' : 'CONTRATO DE PRUEBA';
+        }
+        filas.push([e.numero, e.nombre, fIMSS? fmtFechaCorta(fIMSS):'', vence? fmtFechaCorta(vence):'', est]);
+      });
+      let csv = encabezados.join(',')+'\n'+filas.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\n');
+      downloadBlob(csv, 'text/csv;charset=utf-8;', 'ingreso_imss.csv');
+    };
+
+    function downloadBlob(content, type, filename){
+      const blob = new Blob([content], {type});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    window.exportarPDF = function(containerId, titulo){
+      const node = document.getElementById(containerId);
+      if(!node){ alert('No hay contenido para exportar.'); return; }
+      const w = window.open('', '_blank');
+      const theme = document.documentElement.getAttribute('data-theme')==='dark' ? 'dark' : 'light';
+      w.document.write(`
+        <html><head><title>${titulo}</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+          body{ padding:20px; font-size:12px; }
+          h3{ margin-bottom:12px; }
+          .box{ border:1px solid #dee2e6; border-radius:8px; padding:12px; margin-bottom:10px;}
+          ${theme==='dark' ? `
+            body{ background:#0f1115; color:#e9ecef; }
+            .box{ border-color:#2a2f3a; background:#171a21; }
+          `:``}
+        </style>
+        </head><body>
+        <h3>${titulo}</h3>
+        ${Array.from(node.children).map(el=>`<div class="box">${el.outerHTML}</div>`).join('')}
+        <script>window.print();<\/script>
+        </body></html>
+      `);
+      w.document.close();
+    }
+
+    // ===================== RESPALDO / RESTAURAR =====================
+    window.exportarRespaldo = function(){
+      const keys = [LS_KEYS.EMP, LS_KEYS.PAY, LS_KEYS.ACT, LS_KEYS.HIST, LS_KEYS.PLANS, LS_KEYS.WEEKS, LS_KEYS.THEME];
+      const data = {};
+      keys.forEach(k=> data[k] = JSON.parse(localStorage.getItem(k) || '[]'));
+      const auth = JSON.parse(localStorage.getItem(LS_KEYS.AUTH) || 'null');
+      if(auth) data[LS_KEYS.AUTH] = auth;
+      downloadBlob(JSON.stringify(data, null, 2), 'application/json', `respaldo_nomina_mape_${Date.now()}.json`);
+      logActivity('Respaldo exportado.');
+    };
+    window.importarRespaldo = function(evt, fromLogin=false){
+      const file = evt.target.files?.[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = (e)=>{
+        try{
+          const obj = JSON.parse(e.target.result);
+          if(!confirm('Esto reemplazará los datos locales. ¿Confirmas restaurar el respaldo?')) return;
+          Object.keys(obj).forEach(k=>{
+            localStorage.setItem(k, JSON.stringify(obj[k]));
+          });
+          logActivity('Respaldo importado/restaurado.');
+          // refrescar vistas
+          renderEmpleados(); renderNominas(); refreshKPIs(); renderReportes(); paintWeekLabels();
+          alert('Respaldo restaurado.');
+          if(fromLogin){ location.reload(); }
+        }catch(err){
+          alert('Archivo inválido de respaldo.');
+        }
+      };
+      reader.readAsText(file);
+      if(!fromLogin) evt.target.value = '';
+    };
+
+    // ===================== INICIO =====================
+    function paintWeekLabelsInit(){ try{ paintWeekLabels(); }catch(e){} }
+    checkAuth();
+    navigate('dashboard');
+    paintWeekLabelsInit();
+    renderEmpleados();
+    refreshKPIs();
+
+    // ===================== ATAJOS =====================
+    window.addEventListener('keydown',(e)=>{
+      if(e.ctrlKey && e.key.toLowerCase()==='k'){ e.preventDefault(); const nav = document.querySelector('.navbar'); nav?.scrollIntoView({behavior:'smooth'}); (document.getElementById('buscarEmp')||document.body).focus(); }
+      if(e.altKey && e.key.toLowerCase()==='n'){ e.preventDefault(); openPagoModal(); }
+      if(e.altKey && e.key.toLowerCase()==='e'){ e.preventDefault(); openEmpleadoModal(); }
+    });
+  });
   </script>
 </body>
 </html>
